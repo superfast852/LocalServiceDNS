@@ -1,0 +1,26 @@
+switch from pickle to msgpack
+avoid consumer reconnection overheads. actually work a LOT more on the consumer topic.
+MAYBE use asyncio, i need to get a better grasp of it tho.
+mmap/multiprocessing.shared_memory for shared memory writes. MUCH faster than ipc.
+Speak of, using grpc
+
+use decorators to create services, MUCH tidier and nicer (and also cooler, let's be real here.)
+Example:
+@service("lidar_service", port=6001)
+class LidarService:
+    @expose
+    def get_scan(self):
+        return self.latest_scan
+
+    @expose
+    def start_scanning(self):
+        self.scanning = True
+        return "Started"
+
+Reduce parameters needed to create services. Do we REALLY need to say the ip and port every time we want to create a
+network object? Why not (somehow) have a class that automatically fills that in? or a way to search it.
+From DNS, add a way to monitor the network status. Maybe services and pubs report to the DNS?
+Week 1 - Connection pooling + MessagePack (biggest performance gain)
+Week 2 - Decorator-based services (much cleaner code)
+Week 3 - Config management + launch system (easier deployment)
+Week 4 - Monitoring/debugging tools (faster development)
